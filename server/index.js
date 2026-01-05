@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
 dotenv.config();
 
@@ -35,9 +36,18 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.log('MongoDB connection error:', err));
 
 // Basic Route
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.send('SkillSwap Hub API is running...');
 });
+
+// Serve Static Assets in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    });
+}
 
 // Socket.io Connection
 io.on('connection', (socket) => {
